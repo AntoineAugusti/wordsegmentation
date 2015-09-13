@@ -6,27 +6,21 @@ type Unigram struct {
 }
 
 type Unigrams struct {
-	Data []Unigram
+	data map[string]float64
 }
 
-func (u *Unigram) Equals(s string) bool {
-	return u.Word == s
-}
-
-func (u *Unigram) EqualsUnigram(other Unigram) bool {
-	return u.Equals(other.Word)
+func NewUnigrams() Unigrams {
+	return Unigrams{data: make(map[string]float64)}
 }
 
 func (u *Unigrams) Add(other Unigram) {
-	u.Data = append(u.Data, other)
+	u.data[other.Word] = other.Rating
 }
 
 func (u *Unigrams) ScoreForWord(word string) float64 {
-	uni := Unigram{word, 0}
-	for _, unigram := range u.Data {
-		if unigram.EqualsUnigram(uni) {
-			return unigram.Rating
-		}
+	score, has := u.data[word]
+	if !has {
+		return 0
 	}
-	return 0
+	return score
 }

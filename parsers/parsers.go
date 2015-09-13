@@ -9,8 +9,9 @@ import (
 	m "github.com/antoineaugusti/word-segmentation/models"
 )
 
-func Unigrams(path string) (unigrams m.Unigrams) {
+func Unigrams(path string) m.Unigrams {
 	var fields []string
+	unigrams := m.NewUnigrams()
 
 	file, _ := os.Open(path)
 	defer file.Close()
@@ -25,9 +26,10 @@ func Unigrams(path string) (unigrams m.Unigrams) {
 	return unigrams
 }
 
-func Bigrams(path string) (bigrams m.Bigrams) {
+func Bigrams(path string) m.Bigrams {
 	var fields []string
 	var words []string
+	bigrams := m.NewBigrams()
 
 	file, _ := os.Open(path)
 	defer file.Close()

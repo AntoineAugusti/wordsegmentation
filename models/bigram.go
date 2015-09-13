@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type Bigram struct {
 	First  string
 	Second string
@@ -7,26 +9,25 @@ type Bigram struct {
 }
 
 type Bigrams struct {
-	Data []Bigram
+	data map[string]float64
 }
 
-func (b *Bigram) Equals(first, second string) bool {
-	return b.First == first && b.Second == second
+func (b *Bigram) GetKey() string {
+	return fmt.Sprintf("%s#%s", b.First, b.Second)
 }
 
-func (b *Bigram) EqualsBigram(other Bigram) bool {
-	return b.Equals(other.First, other.Second)
+func NewBigrams() Bigrams {
+	return Bigrams{data: make(map[string]float64)}
 }
 
 func (b *Bigrams) Add(other Bigram) {
-	b.Data = append(b.Data, other)
+	b.data[other.GetKey()] = other.Rating
 }
 
 func (b *Bigrams) ScoreForBigram(other Bigram) float64 {
-	for _, bigram := range b.Data {
-		if bigram.EqualsBigram(other) {
-			return bigram.Rating
-		}
+	score, has := b.data[other.GetKey()]
+	if !has {
+		return 0
 	}
-	return 0
+	return score
 }
