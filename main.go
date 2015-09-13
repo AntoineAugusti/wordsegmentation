@@ -68,7 +68,7 @@ func findCandidates(text, prev string) <-chan m.Arrangement {
 	ch := make(chan m.Arrangement)
 
 	go func() {
-		for _, p := range divide(text, 24) {
+		for p := range divide(text, 24) {
 			prefixScore := math.Log10(score(p.Prefix, prev))
 			arrangement := candidates.ForPossibility(p)
 			if len(arrangement.Words) == 0 {
@@ -87,11 +87,18 @@ func findCandidates(text, prev string) <-chan m.Arrangement {
 	return ch
 }
 
-func divide(text string, limit int) (possibilities m.Possibilities) {
-	for i := 1; i <= min(length(text), limit); i++ {
-		possibilities = append(possibilities, m.Possibility{text[:i], text[i:]})
-	}
-	return
+func divide(text string, limit int) <-chan m.Possibility {
+	ch := make(chan m.Possibility)
+	bound := min(length(text), limit)
+
+	go func() {
+		for i := 1; i <= bound; i++ {
+			ch <- m.Possibility{Prefix: text[:i], Suffix: text[i:]}
+		}
+		close(ch)
+	}()
+
+	return ch
 }
 
 func length(s string) int {
