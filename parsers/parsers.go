@@ -101,7 +101,7 @@ func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup
 }
 
 // Read a file and put the content in a channel.
-func readFile(path string, jobs chan string) chan string {
+func readFile(path string, jobs chan<- string) chan<- string {
 	file, _ := os.Open(path)
 	defer file.Close()
 
