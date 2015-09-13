@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	// Total number of words in the corpus.
 	TOTAL = 1024908267229.0
 )
 
@@ -19,7 +20,7 @@ var (
 	candidates m.Candidates
 )
 
-// Load unigrams and bigrams on initialization
+// Load unigrams and bigrams on initialization from data files.
 func init() {
 	done := make(chan int)
 
@@ -42,16 +43,20 @@ func main() {
 	}
 }
 
+// Return a list of words that is the best segmentation of a given text.
 func Segment(text string) []string {
 	return search(help.CleanString(text), "<s>").Words
 }
 
+// Score a word in the context of the previous word.
 func score(current, previous string) float64 {
 	if help.Length(previous) == 0 {
 		unigramScore := unigrams.ScoreForWord(current)
 		if unigramScore > 0 {
+			// Probability of the current word
 			return unigramScore / TOTAL
 		} else {
+			// Penalize words not found in the unigrams according to their length
 			return 10.0 / (TOTAL * math.Pow(10, float64(help.Length(current))))
 		}
 	} else {
@@ -60,7 +65,10 @@ func score(current, previous string) float64 {
 		if unigramScore > 0 {
 			bigramScore := bigrams.ScoreForBigram(m.Bigram{previous, current, 0})
 			if bigramScore > 0 {
-				return bigramScore / TOTAL / score(previous, "")
+				// Conditional probability of the word given the previous
+				// word. The technical name is 'stupid backoff' and it's
+				// not a probability distribution
+				return bigramScore / TOTAL / score(previous, "<s>")
 			}
 		}
 
@@ -68,6 +76,7 @@ func score(current, previous string) float64 {
 	}
 }
 
+// Search for the best arrangement for a text in the context of a previous phrase.
 func search(text, prev string) (ar m.Arrangement) {
 	if help.Length(text) == 0 {
 		return m.Arrangement{}
@@ -75,6 +84,7 @@ func search(text, prev string) (ar m.Arrangement) {
 
 	max := -10000000.0
 
+	// Find the best candidate by finding the best arrangement rating
 	for a := range findCandidates(text, prev) {
 		if a.Rating > max {
 			max = a.Rating
@@ -85,6 +95,7 @@ func search(text, prev string) (ar m.Arrangement) {
 	return
 }
 
+// Find candidates for a given text and an optional previous chunk of letters.
 func findCandidates(text, prev string) <-chan m.Arrangement {
 	ch := make(chan m.Arrangement)
 
@@ -108,6 +119,8 @@ func findCandidates(text, prev string) <-chan m.Arrangement {
 	return ch
 }
 
+// Create multiple (prefix, suffix) pairs from a text.
+// The length of the prefix should not exceed the 'limit'.
 func divide(text string, limit int) <-chan m.Possibility {
 	ch := make(chan m.Possibility)
 	bound := help.Min(help.Length(text), limit)

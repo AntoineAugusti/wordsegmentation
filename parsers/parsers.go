@@ -10,6 +10,7 @@ import (
 	m "github.com/antoineaugusti/word-segmentation/models"
 )
 
+// Parse unigrams from a given TSV file.
 func Unigrams(path string) m.Unigrams {
 	jobs := make(chan string, 5000)
 	results := make(chan m.Unigram, 5000)
@@ -40,6 +41,7 @@ func Unigrams(path string) m.Unigrams {
 	return unigrams
 }
 
+// Parse bigrams from a given TSV file.
 func Bigrams(path string) m.Bigrams {
 	jobs := make(chan string, 5000)
 	results := make(chan m.Bigram, 5000)
@@ -70,6 +72,7 @@ func Bigrams(path string) m.Bigrams {
 	return bigrams
 }
 
+// Parse a unigram.
 func parseUnigram(jobs <-chan string, results chan<- m.Unigram, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var fields []string
@@ -83,6 +86,7 @@ func parseUnigram(jobs <-chan string, results chan<- m.Unigram, wg *sync.WaitGro
 	}
 }
 
+// Parse a bigram.
 func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var fields []string
@@ -96,6 +100,7 @@ func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup
 	}
 }
 
+// Read a file and put the content in a channel.
 func readFile(path string, jobs chan string) chan string {
 	file, _ := os.Open(path)
 	defer file.Close()
