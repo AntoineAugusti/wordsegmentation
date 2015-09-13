@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"math"
-	"regexp"
-	"strings"
 
+	help "github.com/antoineaugusti/word-segmentation/helpers"
 	m "github.com/antoineaugusti/word-segmentation/models"
 	"github.com/antoineaugusti/word-segmentation/parsers"
-	"github.com/kennygrant/sanitize"
 )
 
 const (
@@ -45,16 +43,16 @@ func main() {
 }
 
 func Segment(text string) []string {
-	return search(cleanString(text), "<s>").Words
+	return search(help.CleanString(text), "<s>").Words
 }
 
 func score(current, previous string) float64 {
-	if length(previous) == 0 {
+	if help.Length(previous) == 0 {
 		unigramScore := unigrams.ScoreForWord(current)
 		if unigramScore > 0 {
 			return unigramScore / TOTAL
 		} else {
-			return 10.0 / (TOTAL * math.Pow(10, float64(length(current))))
+			return 10.0 / (TOTAL * math.Pow(10, float64(help.Length(current))))
 		}
 	} else {
 		// We've got a bigram
@@ -71,7 +69,7 @@ func score(current, previous string) float64 {
 }
 
 func search(text, prev string) (ar m.Arrangement) {
-	if length(text) == 0 {
+	if help.Length(text) == 0 {
 		return m.Arrangement{}
 	}
 
@@ -112,7 +110,7 @@ func findCandidates(text, prev string) <-chan m.Arrangement {
 
 func divide(text string, limit int) <-chan m.Possibility {
 	ch := make(chan m.Possibility)
-	bound := min(length(text), limit)
+	bound := help.Min(help.Length(text), limit)
 
 	go func() {
 		for i := 1; i <= bound; i++ {
@@ -122,31 +120,4 @@ func divide(text string, limit int) <-chan m.Possibility {
 	}()
 
 	return ch
-}
-
-func length(s string) int {
-	return len([]rune(s))
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func cleanString(s string) string {
-	s = strings.Trim(strings.ToLower(s), " ")
-	s = sanitize.Accents(s)
-
-	// Replace certain joining characters with a dash
-	s = regexp.MustCompile(`[ &_=+:]`).ReplaceAllString(s, "-")
-
-	// Remove all other unrecognised characters
-	s = regexp.MustCompile(`[^[:alnum:]-]`).ReplaceAllString(s, "")
-
-	// Remove any multiple dashes caused by replacements above
-	s = regexp.MustCompile(`[\-]+`).ReplaceAllString(s, "-")
-
-	return s
 }
