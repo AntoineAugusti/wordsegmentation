@@ -5,42 +5,106 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
 	m "github.com/antoineaugusti/word-segmentation/models"
 )
 
 func Unigrams(path string) m.Unigrams {
-	var fields []string
+	jobs := make(chan string, 5000)
+	results := make(chan m.Unigram, 5000)
+
+	wg := new(sync.WaitGroup)
+	for w := 1; w <= 2; w++ {
+		wg.Add(1)
+		go parseUnigram(jobs, results, wg)
+	}
+
+	go func() {
+		readFile(path, jobs)
+	}()
+
+	// Now collect all the results
+	go func() {
+		wg.Wait()
+		// Make sure we close the result channel when everything was processed
+		close(results)
+	}()
+
+	// Add up the unigrams
 	unigrams := m.NewUnigrams()
-
-	file, _ := os.Open(path)
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		fields = strings.Split(scanner.Text(), "\t")
-		rating, _ := strconv.ParseFloat(fields[1], 64)
-		unigrams.Add(m.Unigram{fields[0], rating})
+	for b := range results {
+		unigrams.Add(b)
 	}
 
 	return unigrams
 }
 
 func Bigrams(path string) m.Bigrams {
-	var fields []string
-	var words []string
-	bigrams := m.NewBigrams()
+	jobs := make(chan string, 5000)
+	results := make(chan m.Bigram, 5000)
 
+	wg := new(sync.WaitGroup)
+	for w := 1; w <= 2; w++ {
+		wg.Add(1)
+		go parseBigram(jobs, results, wg)
+	}
+
+	go func() {
+		readFile(path, jobs)
+	}()
+
+	// Now collect all the results
+	go func() {
+		wg.Wait()
+		// Make sure we close the result channel when everything was processed
+		close(results)
+	}()
+
+	// Add up the bigrams
+	bigrams := m.NewBigrams()
+	for b := range results {
+		bigrams.Add(b)
+	}
+
+	return bigrams
+}
+
+func parseUnigram(jobs <-chan string, results chan<- m.Unigram, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var fields []string
+
+	for line := range jobs {
+		fields = nil
+		fields = strings.Split(line, "\t")
+		rating, _ := strconv.ParseFloat(fields[1], 64)
+
+		results <- m.Unigram{fields[0], rating}
+	}
+}
+
+func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var fields []string
+
+	for line := range jobs {
+		fields = nil
+		fields = strings.Split(line, "\t")
+		rating, _ := strconv.ParseFloat(fields[2], 64)
+
+		results <- m.Bigram{fields[0], fields[1], rating}
+	}
+}
+
+func readFile(path string, jobs chan string) chan string {
 	file, _ := os.Open(path)
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		fields = strings.Split(scanner.Text(), "\t")
-		words = strings.Split(fields[0], " ")
-		rating, _ := strconv.ParseFloat(fields[1], 64)
-		bigrams.Add(m.Bigram{words[0], words[1], rating})
+		jobs <- scanner.Text()
 	}
+	close(jobs)
 
-	return bigrams
+	return jobs
 }
