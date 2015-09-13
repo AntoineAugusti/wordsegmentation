@@ -11,8 +11,11 @@ import (
 	"github.com/kennygrant/sanitize"
 )
 
+const (
+	TOTAL = 1024908267229.0
+)
+
 var (
-	total      = 1024908267229.0
 	bigrams    m.Bigrams
 	unigrams   m.Unigrams
 	candidates m.Candidates
@@ -22,9 +25,9 @@ func score(current, previous string) float64 {
 	if length(previous) == 0 {
 		unigramScore := unigrams.ScoreForWord(current)
 		if unigramScore > 0 {
-			return unigramScore / total
+			return unigramScore / TOTAL
 		} else {
-			return 10.0 / (total * math.Pow(10, float64(length(current))))
+			return 10.0 / (TOTAL * math.Pow(10, float64(length(current))))
 		}
 	} else {
 		// We've got a bigram
@@ -32,7 +35,7 @@ func score(current, previous string) float64 {
 		if unigramScore > 0 {
 			bigramScore := bigrams.ScoreForBigram(m.Bigram{previous, current, 0})
 			if bigramScore > 0 {
-				return bigramScore / total / score(previous, "")
+				return bigramScore / TOTAL / score(previous, "")
 			}
 		}
 
@@ -50,31 +53,38 @@ func search(text, prev string) (ar m.Arrangement) {
 	}
 
 	max := -10000000.0
-	for _, a := range findCandidates(text, prev) {
+
+	for a := range findCandidates(text, prev) {
 		if a.Rating > max {
 			max = a.Rating
 			ar = a
 		}
 	}
+
 	return
 }
 
-func findCandidates(text, prev string) (ar m.Arrangements) {
-	var slice []string
-	for _, p := range divide(text, 24) {
-		prefixScore := math.Log10(score(p.Prefix, prev))
-		arrangement := candidates.ForPossibility(p)
-		if len(arrangement.Words) == 0 {
-			arrangement = search(p.Suffix, p.Prefix)
-			candidates.Add(m.Candidate{p, arrangement})
-		}
+func findCandidates(text, prev string) <-chan m.Arrangement {
+	ch := make(chan m.Arrangement)
 
-		slice = nil
-		slice = append(slice, p.Prefix)
-		slice = append(slice, arrangement.Words...)
-		ar = append(ar, m.Arrangement{slice, prefixScore + arrangement.Rating})
-	}
-	return
+	go func() {
+		for _, p := range divide(text, 24) {
+			prefixScore := math.Log10(score(p.Prefix, prev))
+			arrangement := candidates.ForPossibility(p)
+			if len(arrangement.Words) == 0 {
+				arrangement = search(p.Suffix, p.Prefix)
+				candidates.Add(m.Candidate{p, arrangement})
+			}
+
+			var slice []string
+			slice = append(slice, p.Prefix)
+			slice = append(slice, arrangement.Words...)
+			ch <- m.Arrangement{slice, prefixScore + arrangement.Rating}
+		}
+		close(ch)
+	}()
+
+	return ch
 }
 
 func divide(text string, limit int) (possibilities m.Possibilities) {
