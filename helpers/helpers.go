@@ -22,14 +22,8 @@ func CleanString(s string) string {
 	s = strings.Trim(strings.ToLower(s), " ")
 	s = sanitize.Accents(s)
 
-	// Replace certain joining characters with a dash
-	s = regexp.MustCompile(`[ &_=+:]`).ReplaceAllString(s, "-")
-
 	// Remove all other unrecognised characters
-	s = regexp.MustCompile(`[^[:alnum:]-]`).ReplaceAllString(s, "")
-
-	// Remove any multiple dashes caused by replacements above
-	s = regexp.MustCompile(`[\-]+`).ReplaceAllString(s, "-")
+	s = regexp.MustCompile(`[^[:alnum:]]`).ReplaceAllString(s, "")
 
 	return s
 }
