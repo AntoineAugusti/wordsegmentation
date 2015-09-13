@@ -21,6 +21,33 @@ var (
 	candidates m.Candidates
 )
 
+// Load unigrams and bigrams on initialization
+func init() {
+	done := make(chan int)
+
+	go func() {
+		bigrams = parsers.Bigrams("data/bigrams.tsv")
+		done <- 1
+	}()
+	go func() {
+		unigrams = parsers.Unigrams("data/unigrams.tsv")
+		done <- 1
+	}()
+
+	<-done
+	<-done
+}
+
+func main() {
+	for _, l := range Segment("whatistheweatherliketoday") {
+		fmt.Println(l)
+	}
+}
+
+func Segment(text string) []string {
+	return search(cleanString(text), "<s>").Words
+}
+
 func score(current, previous string) float64 {
 	if length(previous) == 0 {
 		unigramScore := unigrams.ScoreForWord(current)
@@ -41,10 +68,6 @@ func score(current, previous string) float64 {
 
 		return score(current, "")
 	}
-}
-
-func segment(text string) []string {
-	return search(cleanString(text), "<s>").Words
 }
 
 func search(text, prev string) (ar m.Arrangement) {
@@ -110,15 +133,6 @@ func min(a, b int) int {
 		return a
 	}
 	return b
-}
-
-func main() {
-	bigrams = parsers.Bigrams("data/bigrams.tsv")
-	unigrams = parsers.Unigrams("data/unigrams.tsv")
-
-	for _, l := range segment("whatistheweatherliketoday") {
-		fmt.Println(l)
-	}
 }
 
 func cleanString(s string) string {
