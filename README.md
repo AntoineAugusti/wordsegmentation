@@ -1,5 +1,5 @@
-[![Travis CI](http://img.shields.io/travis/antoineaugusti/wordsegmentation/master.svg?style=flat-square)](https://travis-ci.org/antoineaugusti/wordsegmentation)
-[![Software License](http://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/antoineaugusti/wordsegmentation/LICENSE.md)
+[![Travis CI](https://img.shields.io/travis/AntoineAugusti/wordsegmentation/master.svg?style=flat-square)](https://travis-ci.org/antoineaugusti/wordsegmentation)
+[![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/antoineaugusti/wordsegmentation/LICENSE.md)
 
 # Word segmentation
 Word segmentation is the process of dividing a phrase without spaces back into its constituent parts. For example, consider a phrase like "thisisatest". Humans can immediately identify that the correct phrase should be "this is a test".
