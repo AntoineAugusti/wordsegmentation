@@ -42,3 +42,25 @@ func main() {
 > Information: an **n-gram** is a contiguous sequence of n items from a given sequence of text or speech.
 
 This package ships with an English corpus by default that is ready to use. [Data files](https://github.com/antoineaugusti/wordsegmentation/tree/master/data) are derived from the [Google web trillion word corpus](http://googleresearch.blogspot.com/2006/08/all-our-n-gram-are-belong-to-you.html), as described by Thorsten Brants and Alex Franz, and [distributed](https://catalog.ldc.upenn.edu/LDC2006T13) by the Linguistic Data Consortium. This module contains only a subset of that data. The unigram data includes only the most common 333,000 words. Similarly, bigram data includes only the most common 250,000 phrases. Every word and phrase is lowercased with punctuation removed.
+
+## Using a custom corpus
+If you want to use a custom corpus, you will need to implement the `Corpus` interface to give to the `Segment` method.
+
+The interface is as follow:
+```go
+// The corpus interface that lets access bigrams,
+// unigrams, the total number of words from the corpus
+// and a function to clean a string.
+type Corpus interface {
+    Bigrams() *models.Bigrams
+    Unigrams() *models.Unigrams
+    Total() float64
+    Clean(string) string
+}
+```
+Models can be found here:
+- [Unigrams](models/unigrams.go)
+- [Bigrams](models/bigrams.go)
+
+
+Take a look at the [English corpus source code](corpus/english.go) to help you start!
