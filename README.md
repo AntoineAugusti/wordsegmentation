@@ -59,8 +59,8 @@ type Corpus interface {
 }
 ```
 Models can be found here:
-- [Unigrams](models/unigrams.go)
-- [Bigrams](models/bigrams.go)
+- [Unigrams](models/unigram.go)
+- [Bigrams](models/bigram.go)
 
 
 Take a look at the [English corpus source code](corpus/english.go) to help you start!
