@@ -9,12 +9,12 @@ type Unigrams struct {
 	data map[string]float64
 }
 
-// Create a new unigrams collection.
+// Create a new Unigrams collection.
 func NewUnigrams() Unigrams {
 	return Unigrams{data: make(map[string]float64)}
 }
 
-// Add a unigram to the collection.
+// Add a Unigram to the collection.
 func (u *Unigrams) Add(other Unigram) {
 	u.data[other.Word] = other.Rating
 }

@@ -3,9 +3,13 @@ package wordsegmentation
 import (
 	"testing"
 
+	c "github.com/antoineaugusti/wordsegmentation/corpus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSegment(t *testing.T) {
-	assert.Equal(t, Segment("WhatIsTheWeatherliketoday? "), []string{"what", "is", "the", "weather", "like", "today"})
+	expected := []string{"what", "is", "the", "weather", "like", "today"}
+	englishCorpus := c.NewEnglishCorpus()
+
+	assert.Equal(t, Segment(englishCorpus, "WhatIsTheWeatherliketoday? "), expected)
 }

@@ -5,63 +5,53 @@ import (
 
 	help "github.com/antoineaugusti/wordsegmentation/helpers"
 	m "github.com/antoineaugusti/wordsegmentation/models"
-	"github.com/antoineaugusti/wordsegmentation/parsers"
-)
-
-const (
-	// Total number of words in the corpus.
-	TOTAL = 1024908267229.0
 )
 
 var (
-	bigrams    m.Bigrams
-	unigrams   m.Unigrams
+	corpus     Corpus
 	candidates m.Candidates
 )
 
-// Load unigrams and bigrams on initialization from data files.
-func init() {
-	done := make(chan int)
-
-	go func() {
-		bigrams = parsers.Bigrams("data/bigrams.tsv")
-		done <- 1
-	}()
-	go func() {
-		unigrams = parsers.Unigrams("data/unigrams.tsv")
-		done <- 1
-	}()
-
-	<-done
-	<-done
+// The corpus interface that lets access bigrams,
+// unigrams, the total number of words from the corpus
+// and a function to clean a string.
+//
+// This is the interface you will need to implement if
+// you want to use a custom corpus.
+type Corpus interface {
+	Bigrams() *m.Bigrams
+	Unigrams() *m.Unigrams
+	Total() float64
+	Clean(string) string
 }
 
 // Return a list of words that is the best segmentation of a given text.
-func Segment(text string) []string {
-	return search(help.CleanString(text), "<s>").Words
+func Segment(corp Corpus, text string) []string {
+	corpus = corp
+	return search(corpus.Clean(text), "<s>").Words
 }
 
 // Score a word in the context of the previous word.
 func score(current, previous string) float64 {
 	if help.Length(previous) == 0 {
-		unigramScore := unigrams.ScoreForWord(current)
+		unigramScore := corpus.Unigrams().ScoreForWord(current)
 		if unigramScore > 0 {
 			// Probability of the current word
-			return unigramScore / TOTAL
+			return unigramScore / corpus.Total()
 		} else {
 			// Penalize words not found in the unigrams according to their length
-			return 10.0 / (TOTAL * math.Pow(10, float64(help.Length(current))))
+			return 10.0 / (corpus.Total() * math.Pow(10, float64(help.Length(current))))
 		}
 	} else {
 		// We've got a bigram
-		unigramScore := unigrams.ScoreForWord(previous)
+		unigramScore := corpus.Unigrams().ScoreForWord(previous)
 		if unigramScore > 0 {
-			bigramScore := bigrams.ScoreForBigram(m.Bigram{previous, current, 0})
+			bigramScore := corpus.Bigrams().ScoreForBigram(m.Bigram{previous, current, 0})
 			if bigramScore > 0 {
 				// Conditional probability of the word given the previous
 				// word. The technical name is 'stupid backoff' and it's
 				// not a probability distribution
-				return bigramScore / TOTAL / score(previous, "<s>")
+				return bigramScore / corpus.Total() / score(previous, "<s>")
 			}
 		}
 

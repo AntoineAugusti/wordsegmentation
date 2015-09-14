@@ -102,7 +102,10 @@ func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup
 
 // Read a file and put the content in a channel.
 func readFile(path string, jobs chan<- string) chan<- string {
-	file, _ := os.Open(path)
+	file, err := os.Open(path)
+	if err != nil {
+		panic(err)
+	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
