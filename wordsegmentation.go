@@ -1,12 +1,11 @@
-package main
+package wordsegmentation
 
 import (
-	"fmt"
 	"math"
 
-	help "github.com/antoineaugusti/word-segmentation/helpers"
-	m "github.com/antoineaugusti/word-segmentation/models"
-	"github.com/antoineaugusti/word-segmentation/parsers"
+	help "github.com/antoineaugusti/wordsegmentation/helpers"
+	m "github.com/antoineaugusti/wordsegmentation/models"
+	"github.com/antoineaugusti/wordsegmentation/parsers"
 )
 
 const (
@@ -35,12 +34,6 @@ func init() {
 
 	<-done
 	<-done
-}
-
-func main() {
-	for _, l := range Segment("whatistheweatherliketoday") {
-		fmt.Println(l)
-	}
 }
 
 // Return a list of words that is the best segmentation of a given text.
