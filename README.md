@@ -1,4 +1,4 @@
-[![Travis CI](https://img.shields.io/travis/AntoineAugusti/wordsegmentation/master.svg?style=flat-square)](https://travis-ci.org/antoineaugusti/wordsegmentation)
+[![Travis CI](https://img.shields.io/travis/AntoineAugusti/wordsegmentation/master.svg?style=flat-square)](https://travis-ci.org/AntoineAugusti/wordsegmentation)
 [![Software License](https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square)](https://github.com/antoineaugusti/wordsegmentation/LICENSE.md)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/AntoineAugusti/wordsegmentation)
 
