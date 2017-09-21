@@ -1,12 +1,13 @@
 package corpus
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
-	help "github.com/antoineaugusti/wordsegmentation/helpers"
-	m "github.com/antoineaugusti/wordsegmentation/models"
-	"github.com/antoineaugusti/wordsegmentation/parsers"
+	help "github.com/AntoineAugusti/wordsegmentation/helpers"
+	m "github.com/AntoineAugusti/wordsegmentation/models"
+	"github.com/AntoineAugusti/wordsegmentation/parsers"
 )
 
 type EnglishCorpus struct {
@@ -24,8 +25,9 @@ func NewEnglishCorpus() EnglishCorpus {
 	done := make(chan int)
 	for _, component := range filepath.SplitList(os.Getenv("GOPATH")) {
 		component = filepath.Clean(component)
-		dataPath := filepath.Join(component, "src", "github.com", "antoineaugusti", "wordsegmentation", "data")
+		dataPath := filepath.Join(component, "src", "github.com", "AntoineAugusti", "wordsegmentation", "data")
 		if _, err := os.Stat(dataPath); os.IsNotExist(err) {
+			log.Println(dataPath, "does not exist")
 			continue
 		}
 		go func(dataPath string) {
