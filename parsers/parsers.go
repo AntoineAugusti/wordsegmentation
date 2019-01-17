@@ -2,7 +2,6 @@ package parsers
 
 import (
 	"bufio"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -102,13 +101,7 @@ func parseBigram(jobs <-chan string, results chan<- m.Bigram, wg *sync.WaitGroup
 
 // Read a file and put the content in a channel.
 func readFile(path string, jobs chan<- string) chan<- string {
-	file, err := os.Open(path)
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(strings.NewReader(path))
 	for scanner.Scan() {
 		jobs <- scanner.Text()
 	}
