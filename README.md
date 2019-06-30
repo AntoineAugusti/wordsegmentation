@@ -6,6 +6,11 @@
 Word segmentation is the process of dividing a phrase without spaces back into its constituent parts. For example, consider a phrase like "thisisatest". Humans can immediately identify that the correct phrase should be "this is a test".
 
 ## Source and credits
+This is a modified fork of https://github.com/AntoineAugusti/wordsegmentation - with the following main modifications:
+1. Support in go modules.
+2. Refactor to support go routines.
+3. Additional small improvments.
+
 This package is heavily inspired by the Python module [grantjenks/wordsegment](https://github.com/grantjenks/wordsegment).
 
 Copyright (c) 2015 by Grant Jenks under the Apache 2 license
