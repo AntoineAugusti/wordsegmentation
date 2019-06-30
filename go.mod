@@ -1,4 +1,4 @@
-module github.com/Yafimk/wordsegmentation
+module "github.com/Yafimk/wordsegmentation"
 
 go 1.12
 
