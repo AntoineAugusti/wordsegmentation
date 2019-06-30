@@ -12,5 +12,5 @@ func TestSegment(t *testing.T) {
 	expected := []string{"what", "is", "the", "weather", "like", "today"}
 	englishCorpus := c.NewEnglishCorpus()
 	segmentaor := NewSegmenator(englishCorpus)
-	assert.Equal(t, segmentaor.Segment(englishCorpus, "WhatIsTheWeatherliketoday? "), expected)
+	assert.Equal(t, segmentaor.Segment("WhatIsTheWeatherliketoday?"), expected)
 }
