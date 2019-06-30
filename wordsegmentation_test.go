@@ -2,14 +2,31 @@ package wordsegmentation
 
 import (
 	"testing"
-
-	c "github.com/AntoineAugusti/wordsegmentation/corpus"
+	"fmt"
+	c "github.com/YafimK/wordsegmentation/corpus"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSegment(t *testing.T) {
-	expected := []string{"what", "is", "the", "weather", "like", "today"}
+func TestSegmenator_Segment(t *testing.T) {
+	type args struct {
+		Text string
+	}
 	englishCorpus := c.NewEnglishCorpus()
 
-	assert.Equal(t, Segment(englishCorpus, "WhatIsTheWeatherliketoday? "), expected)
+	tests := []struct {
+		name string
+		s    *Segmenator
+		args args
+		want []string
+	}{
+		{"basic", NewSegmenator(englishCorpus), args{"WhatIsTheWeatherliketoday?"}, []string{"what", "is", "the", "weather", "like", "today"}},
+		{"basic with spaces", NewSegmenator(englishCorpus), args{"click me next"}, []string{"click", "me", "next"}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.s.Segment(tt.args.Text)
+			assert.Equalf(t, tt.want, got, fmt.Sprintf("Segmenator.Segment() = %v, want %v\n", got, tt.want))
+		})
+	}
 }

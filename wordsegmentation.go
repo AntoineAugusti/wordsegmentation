@@ -3,16 +3,11 @@ package wordsegmentation
 import (
 	"math"
 
-	help "github.com/AntoineAugusti/wordsegmentation/helpers"
-	m "github.com/AntoineAugusti/wordsegmentation/models"
+	help "github.com/YafimK/wordsegmentation/helpers"
+	m "github.com/YafimK/wordsegmentation/models"
 )
 
-var (
-	corpus     Corpus
-	candidates m.Candidates
-)
-
-// The corpus interface that lets access bigrams,
+//Corpus  lets access bigrams,
 // unigrams, the total number of words from the corpus
 // and a function to clean a string.
 //
@@ -25,70 +20,61 @@ type Corpus interface {
 	Clean(string) string
 }
 
-// Return a list of words that is the best segmentation of a given text.
-func Segment(corp Corpus, text string) []string {
-	corpus = corp
-	return search(corpus.Clean(text), "<s>").Words
+//Segmenator holds word segmantation functionality for specific corpus
+type Segmenator struct {
+	corpus     Corpus
+	candidates m.Candidates
+}
+
+//NewSegmenator creates new segmentor instance that holds the language corpus and candidate table
+func NewSegmenator(languageCorpus Corpus) *Segmenator {
+	return &Segmenator{
+		corpus: languageCorpus,
+	}
+}
+
+//Segment Return a list of words that is the best segmentation of a given text.
+func (s *Segmenator) Segment(text string) []string {
+	return s.search(s.corpus.Clean(text), "<s>").Words
 }
 
 // Score a word in the context of the previous word.
-func score(current, previous string) float64 {
+func (s *Segmenator) score(current, previous string) float64 {
 	if help.Length(previous) == 0 {
-		unigramScore := corpus.Unigrams().ScoreForWord(current)
+		unigramScore := s.corpus.Unigrams().ScoreForWord(current)
 		if unigramScore > 0 {
 			// Probability of the current word
-			return unigramScore / corpus.Total()
-		} else {
-			// Penalize words not found in the unigrams according to their length
-			return 10.0 / (corpus.Total() * math.Pow(10, float64(help.Length(current))))
+			return unigramScore / s.corpus.Total()
 		}
-	} else {
-		// We've got a bigram
-		unigramScore := corpus.Unigrams().ScoreForWord(previous)
-		if unigramScore > 0 {
-			bigramScore := corpus.Bigrams().ScoreForBigram(m.Bigram{previous, current, 0})
-			if bigramScore > 0 {
-				// Conditional probability of the word given the previous
-				// word. The technical name is 'stupid backoff' and it's
-				// not a probability distribution
-				return bigramScore / corpus.Total() / score(previous, "<s>")
-			}
-		}
-
-		return score(current, "")
+		// Penalize words not found in the unigrams according to their length
+		return 10.0 / (s.corpus.Total() * math.Pow(10, float64(help.Length(current))))
 	}
-}
-
-// Search for the best arrangement for a text in the context of a previous phrase.
-func search(text, prev string) (ar m.Arrangement) {
-	if help.Length(text) == 0 {
-		return m.Arrangement{}
-	}
-
-	max := -10000000.0
-
-	// Find the best candidate by finding the best arrangement rating
-	for a := range findCandidates(text, prev) {
-		if a.Rating > max {
-			max = a.Rating
-			ar = a
+	// We've got a bigram
+	unigramScore := s.corpus.Unigrams().ScoreForWord(previous)
+	if unigramScore > 0 {
+		bigramScore := s.corpus.Bigrams().ScoreForBigram(m.Bigram{previous, current, 0})
+		if bigramScore > 0 {
+			// Conditional probability of the word given the previous
+			// word. The technical name is 'stupid backoff' and it's
+			// not a probability distribution
+			return bigramScore / s.corpus.Total() / s.score(previous, "<s>")
 		}
 	}
 
-	return
+	return s.score(current, "")
 }
 
 // Find candidates for a given text and an optional previous chunk of letters.
-func findCandidates(text, prev string) <-chan m.Arrangement {
+func (s *Segmenator) findCandidates(text, prev string) <-chan m.Arrangement {
 	ch := make(chan m.Arrangement)
 
 	go func() {
 		for p := range divide(text, 24) {
-			prefixScore := math.Log10(score(p.Prefix, prev))
-			arrangement := candidates.ForPossibility(p)
+			prefixScore := math.Log10(s.score(p.Prefix, prev))
+			arrangement := s.candidates.ForPossibility(p)
 			if len(arrangement.Words) == 0 {
-				arrangement = search(p.Suffix, p.Prefix)
-				candidates.Add(m.Candidate{p, arrangement})
+				arrangement = s.search(p.Suffix, p.Prefix)
+				s.candidates.Add(m.Candidate{p, arrangement})
 			}
 
 			var slice []string
@@ -100,6 +86,25 @@ func findCandidates(text, prev string) <-chan m.Arrangement {
 	}()
 
 	return ch
+}
+
+// Search for the best arrangement for a text in the context of a previous phrase.
+func (s *Segmenator) search(text, prev string) (ar m.Arrangement) {
+	if help.Length(text) == 0 {
+		return m.Arrangement{}
+	}
+
+	max := -10000000.0
+
+	// Find the best candidate by finding the best arrangement rating
+	for a := range s.findCandidates(text, prev) {
+		if a.Rating > max {
+			max = a.Rating
+			ar = a
+		}
+	}
+
+	return
 }
 
 // Create multiple (prefix, suffix) pairs from a text.

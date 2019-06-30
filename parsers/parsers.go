@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	m "github.com/AntoineAugusti/wordsegmentation/models"
+	m "github.com/YafimK/wordsegmentation/models"
 )
 
 // Parse unigrams from a given TSV file.
