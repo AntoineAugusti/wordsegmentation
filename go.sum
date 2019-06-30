@@ -1,3 +1,5 @@
+github.com/AntoineAugusti/wordsegmentation v0.0.0-20190117104728-17d202823a3d h1:z7yK7SCVCXm2go0ZYPblu+TeznQjzWoxrivoMmbSGpc=
+github.com/AntoineAugusti/wordsegmentation v0.0.0-20190117104728-17d202823a3d/go.mod h1:lQ8ccgCPk/g6FZLMp5LTHaO10V7v9QAeq02b81IUSTw=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/kennygrant/sanitize v1.2.4 h1:gN25/otpP5vAsO2djbMhF/LQX6R7+O1TB4yv8NzpJ3o=
