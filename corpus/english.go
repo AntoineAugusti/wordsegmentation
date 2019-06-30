@@ -1,10 +1,10 @@
 package corpus
 
 import (
-	"github.com/AntoineAugusti/wordsegmentation/data/english"
-	help "github.com/AntoineAugusti/wordsegmentation/helpers"
-	m "github.com/AntoineAugusti/wordsegmentation/models"
-	"github.com/AntoineAugusti/wordsegmentation/parsers"
+	"github.com/YafimK/wordsegmentation/data/english"
+	help "github.com/YafimK/wordsegmentation/helpers"
+	m "github.com/YafimK/wordsegmentation/models"
+	"github.com/YafimK/wordsegmentation/parsers"
 )
 
 type EnglishCorpus struct {
